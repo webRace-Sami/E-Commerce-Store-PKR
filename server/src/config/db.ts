@@ -9,7 +9,7 @@ const DEFAULT_MONGO_URI =
   'mongodb+srv://samiullahnawaz942_db_user:IIJUllXitmg0FnhA@cluster0.2didtxe.mongodb.net/ecommerce_db?retryWrites=true&w=majority&appName=Cluster0';
 
 export const connectDB = async (): Promise<void> => {
-  const mongoURI = process.env.MONGODB_URI || DEFAULT_MONGO_URI;
+  const mongoURI = process.env.MONGODB_URI || process.env.MONGO_URI || DEFAULT_MONGO_URI;
 
   try {
     const conn = await mongoose.connect(mongoURI, {

@@ -3,11 +3,11 @@
     "storeName": "SM*Store",
     "adminEmail": "samiullahnawaz942@gmail.com",
     "phone": "+92 300 1234567",
-    "shippingFee": 350,
+    "shippingFee": 270,
     "freeShippingThreshold": 50000,
     "taxRate": 0,
     "currency": "PKR",
-    "address": "Karachi, Pakistan"
+    "address": "Gujranwala, Punjab, Pakistan"
   },
   "users": [
     {
