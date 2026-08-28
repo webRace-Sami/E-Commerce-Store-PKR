@@ -188,7 +188,7 @@ export const AdminLogin: React.FC = () => {
                 <input
                   type="email"
                   required
-                  placeholder="admin@smstore.pk"
+                  placeholder="samiullahnawaz942@gmail.com"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   className="form-input"
@@ -202,7 +202,7 @@ export const AdminLogin: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      setResetEmail(email || 'admin@smstore.pk');
+                      setResetEmail(email || 'samiullahnawaz942@gmail.com');
                       setView('forgot-email');
                     }}
                     style={{

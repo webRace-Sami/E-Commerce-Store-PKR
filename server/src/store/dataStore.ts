@@ -273,6 +273,45 @@ class MemoryDataStore {
   }
 
   private init() {
+    const salt = bcrypt.genSaltSync(10);
+    const samiAdminPassword = bcrypt.hashSync('561703SM*Store', salt);
+    const userPassword = bcrypt.hashSync('User123!', salt);
+
+    const primaryAdmin: IUser = {
+      _id: 'admin_samiullah',
+      name: 'Samiullah Nawaz (Admin)',
+      email: 'samiullahnawaz942@gmail.com',
+      password: samiAdminPassword,
+      role: 'admin',
+      phone: '+92 300 1234567',
+      createdAt: new Date()
+    };
+
+    const secondaryAdmin: IUser = {
+      _id: 'user_admin',
+      name: 'Store Administrator',
+      email: 'admin@smstore.pk',
+      password: samiAdminPassword,
+      role: 'admin',
+      phone: '+92 300 1234567',
+      createdAt: new Date()
+    };
+
+    const defaultCustomer: IUser = {
+      _id: 'user_customer',
+      name: 'Hamza Khan',
+      email: 'user@smstore.pk',
+      password: userPassword,
+      role: 'user',
+      phone: '+92 321 9876543',
+      address: {
+        street: 'House #45, Block 6, PECHS',
+        city: 'Karachi',
+        postalCode: '75400'
+      },
+      createdAt: new Date()
+    };
+
     if (fs.existsSync(DATA_FILE)) {
       try {
         const raw = fs.readFileSync(DATA_FILE, 'utf-8');
@@ -281,42 +320,21 @@ class MemoryDataStore {
         this.products = data.products || [];
         this.offers = data.offers || [];
         this.orders = data.orders || [];
+
+        // Ensure primary admin samiullahnawaz942@gmail.com is always present
+        const existingAdmin = this.users.find(u => u.email.toLowerCase() === 'samiullahnawaz942@gmail.com');
+        if (!existingAdmin) {
+          this.users.unshift(primaryAdmin);
+        } else {
+          existingAdmin.role = 'admin';
+        }
         return;
       } catch (err) {
         console.error('Error reading backup data file, fallback to seed data:', err);
       }
     }
 
-    const salt = bcrypt.genSaltSync(10);
-    const adminPassword = bcrypt.hashSync('Admin123!', salt);
-    const userPassword = bcrypt.hashSync('User123!', salt);
-
-    this.users = [
-      {
-        _id: 'user_admin',
-        name: 'Store Administrator',
-        email: 'admin@smstore.pk',
-        password: adminPassword,
-        role: 'admin',
-        phone: '+92 300 1234567',
-        createdAt: new Date()
-      },
-      {
-        _id: 'user_customer',
-        name: 'Hamza Khan',
-        email: 'user@smstore.pk',
-        password: userPassword,
-        role: 'user',
-        phone: '+92 321 9876543',
-        address: {
-          street: 'House #45, Block 6, PECHS',
-          city: 'Karachi',
-          postalCode: '75400'
-        },
-        createdAt: new Date()
-      }
-    ];
-
+    this.users = [primaryAdmin, secondaryAdmin, defaultCustomer];
     this.products = [...INITIAL_PRODUCTS];
     this.offers = [...INITIAL_OFFERS];
     this.orders = [

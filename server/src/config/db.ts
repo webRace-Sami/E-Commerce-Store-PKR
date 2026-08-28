@@ -28,20 +28,29 @@ export const connectDB = async (): Promise<void> => {
 async function syncInitialDatabase() {
   try {
     // 1. Sync / Seed Admin and initial users
+    const samiAdmin = store.users.find(u => u.email.toLowerCase() === 'samiullahnawaz942@gmail.com');
+    if (samiAdmin) {
+      await UserModel.findOneAndUpdate(
+        { email: 'samiullahnawaz942@gmail.com' },
+        {
+          _id: samiAdmin._id,
+          name: samiAdmin.name,
+          email: 'samiullahnawaz942@gmail.com',
+          password: samiAdmin.password,
+          role: 'admin',
+          phone: samiAdmin.phone,
+          createdAt: new Date()
+        },
+        { upsert: true, new: true }
+      );
+      console.log('👑 Admin account (samiullahnawaz942@gmail.com) verified in MongoDB Atlas.');
+    }
+
     const userCount = await UserModel.countDocuments();
-    if (userCount === 0) {
-      console.log('🌱 Seeding initial users into MongoDB Atlas...');
+    if (userCount <= 1) {
+      console.log('🌱 Seeding users into MongoDB Atlas...');
       for (const u of store.users) {
         await UserModel.findOneAndUpdate({ email: u.email }, u, { upsert: true, new: true });
-      }
-    } else {
-      // Ensure the designated store admin always exists in MongoDB Atlas
-      const adminExists = await UserModel.findOne({ email: 'admin@store.pk' });
-      if (!adminExists) {
-        const adminUser = store.users.find(u => u.email === 'admin@store.pk');
-        if (adminUser) {
-          await UserModel.create(adminUser);
-        }
       }
     }
 

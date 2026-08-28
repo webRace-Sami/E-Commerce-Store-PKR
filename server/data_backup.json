@@ -1,6 +1,15 @@
 {
   "users": [
     {
+      "_id": "admin_samiullah",
+      "name": "Samiullah Nawaz (Admin)",
+      "email": "samiullahnawaz942@gmail.com",
+      "password": "$2a$10$RkGwA2BdWTcI3bUOsa6T9.45JI6SQ4JjDkt/ZVVsBkJSyNEAf8jdi",
+      "role": "admin",
+      "phone": "+92 300 1234567",
+      "createdAt": "2026-08-28T19:39:07.953Z"
+    },
+    {
       "_id": "user_admin",
       "name": "Store Administrator",
       "email": "admin@smstore.pk",
@@ -31,6 +40,14 @@
       "role": "user",
       "phone": "+92 300 0000000",
       "createdAt": "2026-08-28T18:45:11.436Z"
+    },
+    {
+      "_id": "user_1787946740745_9b5i0",
+      "name": "customer_ali",
+      "email": "customer_ali@example.com",
+      "password": "$2a$10$TjEZMvkrcB.9iyAqTz9yguH2gBD2VN9rf/GMdk4oCTZYhXHpmpn1y",
+      "role": "user",
+      "createdAt": "2026-08-28T19:52:20.745Z"
     }
   ],
   "products": [
