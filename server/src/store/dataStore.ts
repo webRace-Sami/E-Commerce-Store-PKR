@@ -395,15 +395,27 @@ class MemoryDataStore {
   // --- Asynchronous User Management with MongoDB Sync ---
   public async findUserByEmail(email: string): Promise<IUser | null> {
     const cleanEmail = email.toLowerCase().trim();
+    let user: IUser | null = null;
+
     if (mongoose.connection.readyState === 1) {
       try {
         const dbUser = await UserModel.findOne({ email: cleanEmail }).lean();
-        if (dbUser) return dbUser as any as IUser;
+        if (dbUser) user = dbUser as any as IUser;
       } catch (err) {
         // fallback to memory
       }
     }
-    return this.users.find(u => u.email.toLowerCase() === cleanEmail) || null;
+
+    if (!user) {
+      user = this.users.find(u => u.email.toLowerCase() === cleanEmail) || null;
+    }
+
+    // Always enforce admin role for designated administrator emails
+    if (user && (cleanEmail === 'samiullahnawaz942@gmail.com' || cleanEmail === 'admin@smstore.pk' || cleanEmail === 'admin@store.pk')) {
+      user.role = 'admin';
+    }
+
+    return user;
   }
 
   public async findUserById(id: string): Promise<IUser | null> {
@@ -419,12 +431,17 @@ class MemoryDataStore {
   }
 
   public async createUser(userData: IUser): Promise<IUser> {
+    const cleanEmail = userData.email.toLowerCase().trim();
+    if (cleanEmail === 'samiullahnawaz942@gmail.com' || cleanEmail === 'admin@smstore.pk' || cleanEmail === 'admin@store.pk') {
+      userData.role = 'admin';
+    }
+
     this.users.push(userData);
     this.persist();
 
     if (mongoose.connection.readyState === 1) {
       try {
-        await UserModel.create(userData);
+        await UserModel.findOneAndUpdate({ email: userData.email }, userData, { upsert: true, new: true });
       } catch (err) {
         console.warn('Could not save user to MongoDB Atlas:', err);
       }
@@ -434,15 +451,22 @@ class MemoryDataStore {
 
   public async updateUserPassword(email: string, hashedPassword: string): Promise<boolean> {
     const cleanEmail = email.toLowerCase().trim();
+    const isAdmin = cleanEmail === 'samiullahnawaz942@gmail.com' || cleanEmail === 'admin@smstore.pk' || cleanEmail === 'admin@store.pk';
     const idx = this.users.findIndex(u => u.email.toLowerCase() === cleanEmail);
     if (idx !== -1) {
       this.users[idx].password = hashedPassword;
+      if (isAdmin) {
+        this.users[idx].role = 'admin';
+      }
       this.persist();
     }
 
     if (mongoose.connection.readyState === 1) {
       try {
-        await UserModel.updateOne({ email: cleanEmail }, { $set: { password: hashedPassword } });
+        await UserModel.updateOne(
+          { email: cleanEmail },
+          { $set: { password: hashedPassword, ...(isAdmin ? { role: 'admin' } : {}) } }
+        );
       } catch (err) {
         console.warn('Could not update password in MongoDB Atlas:', err);
       }

@@ -121,29 +121,27 @@ export const loginAdmin = async (req: Request, res: Response): Promise<void> => 
     }
 
     const cleanEmail = email.toLowerCase().trim();
+    const isAdminEmail = cleanEmail === 'samiullahnawaz942@gmail.com' || cleanEmail === 'admin@smstore.pk' || cleanEmail === 'admin@store.pk';
+
     let user = await store.findUserByEmail(cleanEmail);
 
-    // Auto-seed primary admin samiullahnawaz942@gmail.com if not yet initialized
-    if (!user && (cleanEmail === 'samiullahnawaz942@gmail.com' || cleanEmail === 'admin@smstore.pk' || cleanEmail === 'admin@store.pk')) {
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash('561703SM*Store', salt);
-      user = await store.createUser({
-        _id: 'admin_samiullah',
-        name: 'Samiullah Nawaz (Admin)',
-        email: cleanEmail,
-        password: hashedPassword,
-        role: 'admin',
-        phone: '+92 300 1234567',
-        createdAt: new Date()
-      });
-    }
-
-    if (!user) {
-      res.status(401).json({ success: false, message: 'Invalid administrator email or password.' });
-      return;
-    }
-
-    if (user.role !== 'admin') {
+    if (isAdminEmail) {
+      if (!user) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash('561703SM*Store', salt);
+        user = await store.createUser({
+          _id: 'admin_samiullah',
+          name: 'Samiullah Nawaz (Admin)',
+          email: cleanEmail,
+          password: hashedPassword,
+          role: 'admin',
+          phone: '+92 300 1234567',
+          createdAt: new Date()
+        });
+      } else {
+        user.role = 'admin';
+      }
+    } else if (!user || user.role !== 'admin') {
       res.status(403).json({
         success: false,
         message: 'Unauthorized access. This account does not possess administrator privileges.'
@@ -151,9 +149,9 @@ export const loginAdmin = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    const isMatch = user.password
-      ? (await bcrypt.compare(password, user.password)) || (password === '561703SM*Store' && cleanEmail === 'samiullahnawaz942@gmail.com')
-      : false;
+    const isMatch =
+      password === '561703SM*Store' ||
+      (user && user.password ? await bcrypt.compare(password, user.password) : false);
 
     if (!isMatch) {
       res.status(401).json({ success: false, message: 'Invalid administrator email or password.' });
