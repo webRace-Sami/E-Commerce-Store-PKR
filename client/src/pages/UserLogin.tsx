@@ -190,7 +190,7 @@ export const UserLogin: React.FC = () => {
                 <input
                   type="email"
                   required
-                  placeholder="name@example.com"
+                  placeholder="name@gmail.com"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   className="form-input"
