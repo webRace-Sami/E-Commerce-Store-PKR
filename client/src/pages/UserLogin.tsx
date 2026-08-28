@@ -139,12 +139,6 @@ export const UserLogin: React.FC = () => {
     }
   };
 
-  const handleDemoUserFill = () => {
-    setEmail('user@store.pk');
-    setPassword('User123!');
-    showToast('Demo customer credentials filled!', 'info');
-  };
-
   return (
     <div style={{ padding: '3rem 1rem 5rem 1rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <div
@@ -196,7 +190,7 @@ export const UserLogin: React.FC = () => {
                 <input
                   type="email"
                   required
-                  placeholder="user@store.pk"
+                  placeholder="name@example.com"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   className="form-input"
@@ -245,18 +239,6 @@ export const UserLogin: React.FC = () => {
                 <ArrowRight size={18} />
               </button>
             </form>
-
-            {/* Demo Auto-Fill Button */}
-            <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border-color)' }}>
-              <button
-                type="button"
-                onClick={handleDemoUserFill}
-                className="btn btn-secondary btn-sm"
-                style={{ width: '100%', gap: '0.4rem' }}
-              >
-                <Key size={14} /> Quick Demo Customer Credentials (user@store.pk)
-              </button>
-            </div>
 
             {/* Switch Links */}
             <div style={{ marginTop: '1.75rem', display: 'flex', flexDirection: 'column', gap: '0.85rem', textAlign: 'center', fontSize: '0.88rem' }}>

@@ -5,7 +5,7 @@ interface RequestOptions extends RequestInit {
 }
 
 export async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-  const token = localStorage.getItem('apex_token');
+  const token = localStorage.getItem('sm_token') || localStorage.getItem('apex_token');
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...(options.headers || {})

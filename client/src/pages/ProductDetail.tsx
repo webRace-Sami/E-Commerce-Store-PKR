@@ -80,7 +80,7 @@ export const ProductDetail: React.FC = () => {
     if (navigator.share) {
       navigator.share({
         title: product.name,
-        text: `Check out ${product.name} on ApexStore Pakistan for ${formatPKR(product.price)}!`,
+        text: `Check out ${product.name} on SM*Store Pakistan for ${formatPKR(product.price)}!`,
         url: window.location.href
       });
     } else {

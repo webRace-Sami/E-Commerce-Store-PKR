@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, Truck, Clock, CheckCircle2, AlertCircle, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Package, Truck, Clock, CheckCircle2, AlertCircle, ShoppingBag, ArrowRight, Printer } from 'lucide-react';
 import { api } from '../services/api';
 import { Order } from '../types';
 import { formatPKR } from '../utils/currency';
 import { useAuth } from '../context/AuthContext';
+import { generateReceiptPDF } from '../utils/receiptGenerator';
 
 export const OrdersPage: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -86,7 +87,7 @@ export const OrdersPage: React.FC = () => {
             My Orders & Tracking
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
-            Track the live progress of your electronic purchases in Pakistan.
+            Track the live progress of your electronic purchases in Pakistan and print official invoices.
           </p>
         </div>
 
@@ -146,7 +147,7 @@ export const OrdersPage: React.FC = () => {
                 >
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                      <span style={{ fontWeight: 800, fontSize: '1.05rem' }}>Order #{order._id}</span>
+                      <span style={{ fontWeight: 800, fontSize: '1.05rem' }}>Invoice #INV-{order._id}</span>
                       {getStatusBadge(order.orderStatus)}
                     </div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
@@ -154,12 +155,23 @@ export const OrdersPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Total Amount</div>
-                    <div className="price-pkr" style={{ fontSize: '1.3rem' }}>
-                      <span className="price-currency">₨</span>
-                      {new Intl.NumberFormat('en-PK').format(order.totalPrice)}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Total Amount</div>
+                      <div className="price-pkr" style={{ fontSize: '1.3rem' }}>
+                        <span className="price-currency">₨</span>
+                        {new Intl.NumberFormat('en-PK').format(order.totalPrice)}
+                      </div>
                     </div>
+
+                    <button
+                      type="button"
+                      onClick={() => generateReceiptPDF(order)}
+                      className="btn btn-secondary btn-sm"
+                      style={{ gap: '0.4rem', borderRadius: 'var(--radius-md)' }}
+                    >
+                      <Printer size={14} /> Download PDF Receipt
+                    </button>
                   </div>
                 </div>
 
@@ -203,7 +215,7 @@ export const OrdersPage: React.FC = () => {
                     color: 'var(--text-secondary)'
                   }}
                 >
-                  <strong>Delivery To:</strong> {order.customerName}, {order.shippingAddress.address}, {order.shippingAddress.city}, Pakistan ({order.customerPhone})
+                  <strong>Delivery To:</strong> {order.customerName}, {order.shippingAddress.address}, {order.shippingAddress.city}, Pakistan ({order.customerPhone}) • WhatsApp Helpline: +92 300 1234567
                 </div>
               </div>
             ))}

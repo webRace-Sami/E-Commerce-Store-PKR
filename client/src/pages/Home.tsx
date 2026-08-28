@@ -225,7 +225,7 @@ export const Home: React.FC = () => {
         {/* Secondary Promo Banner if available */}
         {offers.length > 1 && <PromoBanner offer={offers[1]} />}
 
-        {/* Why Choose ApexStore Pakistan */}
+        {/* Why Choose SM*Store Pakistan */}
         <section
           className="glass-panel"
           style={{
@@ -237,7 +237,7 @@ export const Home: React.FC = () => {
           }}
         >
           <h3 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '0.5rem' }}>
-            Why Pakistan Shoppers Trust ApexStore
+            Why Pakistan Shoppers Trust SM*Store
           </h3>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '600px', margin: '0 auto 2rem auto' }}>
             Guaranteed PTA approved smartphones, sealed studio headphones, and computer accessories with transparent PKR pricing and nationwide Cash on Delivery.

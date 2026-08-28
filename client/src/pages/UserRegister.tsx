@@ -34,7 +34,7 @@ export const UserRegister: React.FC = () => {
       });
 
       if (res.success) {
-        showToast('Registration successful! Welcome to ApexStore.', 'success');
+        showToast('Registration successful! Welcome to SM*Store.', 'success');
         navigate('/');
       } else {
         throw new Error(res.message || 'Registration failed');

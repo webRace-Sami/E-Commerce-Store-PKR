@@ -295,7 +295,7 @@ class MemoryDataStore {
       {
         _id: 'user_admin',
         name: 'Store Administrator',
-        email: 'admin@store.pk',
+        email: 'admin@smstore.pk',
         password: adminPassword,
         role: 'admin',
         phone: '+92 300 1234567',
@@ -304,7 +304,7 @@ class MemoryDataStore {
       {
         _id: 'user_customer',
         name: 'Hamza Khan',
-        email: 'user@store.pk',
+        email: 'user@smstore.pk',
         password: userPassword,
         role: 'user',
         phone: '+92 321 9876543',

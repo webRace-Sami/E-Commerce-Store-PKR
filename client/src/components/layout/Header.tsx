@@ -92,7 +92,7 @@ export const Header: React.FC = () => {
           </div>
           <div>
             <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '1.35rem', lineHeight: 1, letterSpacing: '-0.03em' }}>
-              APEX<span style={{ color: 'var(--primary)' }}>STORE</span>
+              SM*<span style={{ color: 'var(--primary)' }}>STORE</span>
             </div>
             <div style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', color: 'var(--text-muted)' }}>
               PAKISTAN • PKR

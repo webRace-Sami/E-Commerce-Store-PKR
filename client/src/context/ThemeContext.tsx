@@ -12,13 +12,13 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
-    const saved = localStorage.getItem('apex_theme') as Theme;
+    const saved = (localStorage.getItem('sm_theme') || localStorage.getItem('apex_theme')) as Theme;
     return saved === 'light' || saved === 'dark' ? saved : 'dark'; // Default to sleek night mode
   });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('apex_theme', theme);
+    localStorage.setItem('sm_theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {

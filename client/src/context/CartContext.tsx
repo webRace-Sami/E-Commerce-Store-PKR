@@ -25,12 +25,12 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>(() => {
-    const saved = localStorage.getItem('apex_cart');
+    const saved = localStorage.getItem('sm_cart') || localStorage.getItem('apex_cart');
     return saved ? JSON.parse(saved) : [];
   });
 
   const [wishlist, setWishlist] = useState<string[]>(() => {
-    const saved = localStorage.getItem('apex_wishlist');
+    const saved = localStorage.getItem('sm_wishlist') || localStorage.getItem('apex_wishlist');
     return saved ? JSON.parse(saved) : [];
   });
 
@@ -38,11 +38,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { showToast, warning } = useToast();
 
   useEffect(() => {
-    localStorage.setItem('apex_cart', JSON.stringify(items));
+    localStorage.setItem('sm_cart', JSON.stringify(items));
   }, [items]);
 
   useEffect(() => {
-    localStorage.setItem('apex_wishlist', JSON.stringify(wishlist));
+    localStorage.setItem('sm_wishlist', JSON.stringify(wishlist));
   }, [wishlist]);
 
   const addToCart = (product: Product, quantity: number = 1): boolean => {

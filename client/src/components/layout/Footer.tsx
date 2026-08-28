@@ -141,15 +141,18 @@ export const Footer: React.FC = () => {
                 <ShoppingBag size={18} />
               </div>
               <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '1.2rem' }}>
-                APEX<span style={{ color: 'var(--primary)' }}>STORE</span>
+                SM*<span style={{ color: 'var(--primary)' }}>STORE</span>
               </span>
             </div>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1rem' }}>
               Pakistan’s leading destination for premium consumer electronics, flagship smartphones, studio audio, and computer peripherals in PKR.
             </p>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
               <span className="badge badge-primary">₨ PKR Pricing</span>
               <span className="badge badge-success">Cash on Delivery</span>
+            </div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+              <strong>WhatsApp Helpline:</strong> +92 300 1234567
             </div>
           </div>
 
@@ -215,7 +218,7 @@ export const Footer: React.FC = () => {
           }}
         >
           <div>
-            © {new Date().getFullYear()} ApexStore Pakistan. All rights reserved. MERN Stack TypeScript Edition.
+            © {new Date().getFullYear()} SM*Store Pakistan. All rights reserved to WebRace Co. 2026.
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
             <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>Accepted in Pakistan:</span>

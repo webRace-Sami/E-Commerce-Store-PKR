@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Truck, CheckCircle2, Clock, AlertCircle, Phone, MapPin, Search } from 'lucide-react';
+import { ShoppingBag, Truck, CheckCircle2, Clock, AlertCircle, Phone, MapPin, Search, Printer } from 'lucide-react';
 import { api } from '../../services/api';
 import { Order } from '../../types';
 import { formatPKR } from '../../utils/currency';
 import { useToast } from '../../context/ToastContext';
+import { generateReceiptPDF } from '../../utils/receiptGenerator';
 
 export const AdminOrders: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -61,7 +62,7 @@ export const AdminOrders: React.FC = () => {
             Customer Orders & Fulfillment
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.2rem' }}>
-            Update courier statuses (Pending → Processing → Shipped → Delivered) and review PKR payments.
+            Update courier statuses (Pending → Processing → Shipped → Delivered), review PKR payments, and generate invoices.
           </p>
         </div>
 
@@ -142,7 +143,7 @@ export const AdminOrders: React.FC = () => {
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                       <span style={{ fontWeight: 800, fontSize: '1.05rem', fontFamily: 'monospace' }}>
-                        #{order._id}
+                        #INV-{order._id}
                       </span>
                       <span className="badge badge-secondary">{order.paymentMethod}</span>
                     </div>
@@ -151,27 +152,38 @@ export const AdminOrders: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Status update selector */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Status:</span>
-                    <select
-                      value={order.orderStatus}
-                      onChange={e => handleStatusChange(order._id, e.target.value)}
-                      className="form-select"
-                      style={{
-                        width: 'auto',
-                        padding: '0.4rem 0.8rem',
-                        fontSize: '0.88rem',
-                        fontWeight: 700,
-                        borderColor: order.orderStatus === 'Delivered' ? 'var(--success)' : order.orderStatus === 'Shipped' ? 'var(--primary)' : 'var(--warning)'
-                      }}
+                  {/* Status and Action Buttons */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      onClick={() => generateReceiptPDF(order)}
+                      className="btn btn-secondary btn-sm"
+                      style={{ gap: '0.35rem', borderRadius: 'var(--radius-md)' }}
                     >
-                      <option value="Pending">🕒 Pending</option>
-                      <option value="Processing">⚙️ Processing</option>
-                      <option value="Shipped">🚚 Shipped (In Transit)</option>
-                      <option value="Delivered">✅ Delivered</option>
-                      <option value="Cancelled">❌ Cancelled</option>
-                    </select>
+                      <Printer size={14} /> Print PDF Receipt
+                    </button>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Status:</span>
+                      <select
+                        value={order.orderStatus}
+                        onChange={e => handleStatusChange(order._id, e.target.value)}
+                        className="form-select"
+                        style={{
+                          width: 'auto',
+                          padding: '0.4rem 0.8rem',
+                          fontSize: '0.88rem',
+                          fontWeight: 700,
+                          borderColor: order.orderStatus === 'Delivered' ? 'var(--success)' : order.orderStatus === 'Shipped' ? 'var(--primary)' : 'var(--warning)'
+                        }}
+                      >
+                        <option value="Pending">🕒 Pending</option>
+                        <option value="Processing">⚙️ Processing</option>
+                        <option value="Shipped">🚚 Shipped (In Transit)</option>
+                        <option value="Delivered">✅ Delivered</option>
+                        <option value="Cancelled">❌ Cancelled</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
 

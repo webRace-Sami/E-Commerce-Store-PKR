@@ -132,12 +132,6 @@ export const AdminLogin: React.FC = () => {
     }
   };
 
-  const handleDemoAdminFill = () => {
-    setEmail('admin@store.pk');
-    setPassword('Admin123!');
-    showToast('Demo administrator credentials filled!', 'info');
-  };
-
   return (
     <div style={{ padding: '3rem 1rem 5rem 1rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <div
@@ -194,7 +188,7 @@ export const AdminLogin: React.FC = () => {
                 <input
                   type="email"
                   required
-                  placeholder="admin@store.pk"
+                  placeholder="admin@smstore.pk"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   className="form-input"
@@ -208,7 +202,7 @@ export const AdminLogin: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      setResetEmail(email || 'admin@store.pk');
+                      setResetEmail(email || 'admin@smstore.pk');
                       setView('forgot-email');
                     }}
                     style={{
@@ -245,18 +239,6 @@ export const AdminLogin: React.FC = () => {
                 <ArrowRight size={18} />
               </button>
             </form>
-
-            {/* Demo Auto-Fill Button */}
-            <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border-color)' }}>
-              <button
-                type="button"
-                onClick={handleDemoAdminFill}
-                className="btn btn-secondary btn-sm"
-                style={{ width: '100%', gap: '0.4rem', border: '1px dashed var(--warning)' }}
-              >
-                <Key size={14} color="var(--warning)" /> Quick Demo Admin Credentials (admin@store.pk)
-              </button>
-            </div>
 
             {/* User Return Link */}
             <div style={{ marginTop: '1.75rem', textAlign: 'center', fontSize: '0.88rem' }}>

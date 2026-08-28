@@ -9,7 +9,9 @@ import {
   CheckCircle2,
   ArrowRight,
   ShoppingBag,
-  ArrowLeft
+  ArrowLeft,
+  Printer,
+  FileText
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -17,6 +19,7 @@ import { useToast } from '../context/ToastContext';
 import { api } from '../services/api';
 import { formatPKR } from '../utils/currency';
 import { Order } from '../types';
+import { generateReceiptPDF } from '../utils/receiptGenerator';
 
 export const CheckoutPage: React.FC = () => {
   const { items, subtotal, shipping, totalPrice, clearCart } = useCart();
@@ -78,7 +81,7 @@ export const CheckoutPage: React.FC = () => {
     try {
       const orderPayload = {
         customerName: formData.customerName,
-        customerEmail: formData.customerEmail || 'customer@store.pk',
+        customerEmail: formData.customerEmail || 'customer@smstore.pk',
         customerPhone: formData.customerPhone,
         shippingAddress: {
           address: formData.address,
@@ -160,7 +163,7 @@ export const CheckoutPage: React.FC = () => {
               borderRadius: 'var(--radius-lg)',
               border: '1px solid var(--border-color)',
               textAlign: 'left',
-              marginBottom: '2rem',
+              marginBottom: '1.5rem',
               display: 'flex',
               flexDirection: 'column',
               gap: '0.6rem',
@@ -168,19 +171,23 @@ export const CheckoutPage: React.FC = () => {
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Order ID:</span>
-              <strong style={{ fontFamily: 'monospace' }}>#{placedOrder._id}</strong>
+              <span style={{ color: 'var(--text-muted)' }}>Invoice / Order ID:</span>
+              <strong style={{ fontFamily: 'monospace' }}>#INV-{placedOrder._id}</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-muted)' }}>Payment Method:</span>
               <strong>{placedOrder.paymentMethod}</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Delivery Destination:</span>
-              <strong>{placedOrder.shippingAddress.city}, Pakistan</strong>
+              <span style={{ color: 'var(--text-muted)' }}>Courier Delivery:</span>
+              <strong>{placedOrder.shippingAddress.city}, Pakistan ({placedOrder.shippingPrice === 0 ? 'FREE' : formatPKR(placedOrder.shippingPrice)})</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: 'var(--text-muted)' }}>WhatsApp Helpline:</span>
+              <strong>+92 300 1234567</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-color)', paddingTop: '0.6rem', marginTop: '0.2rem' }}>
-              <span style={{ fontWeight: 800 }}>Total in PKR:</span>
+              <span style={{ fontWeight: 800 }}>Total Payable (PKR):</span>
               <span className="price-pkr" style={{ fontSize: '1.2rem' }}>
                 <span className="price-currency">₨</span>
                 {new Intl.NumberFormat('en-PK').format(placedOrder.totalPrice)}
@@ -188,10 +195,27 @@ export const CheckoutPage: React.FC = () => {
             </div>
           </div>
 
+          {/* PDF Receipt Action */}
+          <button
+            type="button"
+            onClick={() => generateReceiptPDF(placedOrder)}
+            className="btn btn-secondary btn-lg"
+            style={{
+              width: '100%',
+              marginBottom: '1rem',
+              borderRadius: 'var(--radius-lg)',
+              gap: '0.5rem',
+              border: '1.5px solid var(--border-color)',
+              fontWeight: 700
+            }}
+          >
+            <Printer size={18} /> Download / Print Official PDF Receipt
+          </button>
+
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             <Link
               to="/orders"
-              className="btn btn-secondary btn-lg"
+              className="btn btn-ghost btn-lg"
               style={{ flex: 1, borderRadius: 'var(--radius-lg)' }}
             >
               Track Order Status

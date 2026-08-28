@@ -3,7 +3,7 @@
     {
       "_id": "user_admin",
       "name": "Store Administrator",
-      "email": "admin@store.pk",
+      "email": "admin@smstore.pk",
       "password": "$2a$10$XUVh7iQhE2NnT/2T4QHeXOzuV7sHMzPK8fu5pJKCCDu2nKEoqToWS",
       "role": "admin",
       "phone": "+92 300 1234567",
@@ -12,7 +12,7 @@
     {
       "_id": "user_customer",
       "name": "Hamza Khan",
-      "email": "user@store.pk",
+      "email": "user@smstore.pk",
       "password": "$2a$10$XUVh7iQhE2NnT/2T4QHeXOk3Yd.EIy3ysQr44X0US2AClFm8nM4zC",
       "role": "user",
       "phone": "+92 321 9876543",
@@ -322,7 +322,7 @@
       "_id": "order_1787931193847",
       "user": "user_customer",
       "customerName": "Hamza Khan",
-      "customerEmail": "user@store.pk",
+      "customerEmail": "user@smstore.pk",
       "customerPhone": "0300 1234567",
       "shippingAddress": {
         "address": "House 12, Street 4, F-7/2",
@@ -350,7 +350,7 @@
       "_id": "order_1001",
       "user": "user_customer",
       "customerName": "Hamza Khan",
-      "customerEmail": "user@store.pk",
+      "customerEmail": "user@smstore.pk",
       "customerPhone": "+92 321 9876543",
       "shippingAddress": {
         "address": "House #45, Block 6, PECHS",

@@ -49,7 +49,7 @@ export const registerCustomer = async (req: Request, res: Response): Promise<voi
 
     res.status(201).json({
       success: true,
-      message: 'Account created successfully! Welcome to Apex Commerce.',
+      message: 'Account created successfully! Welcome to SM*Store.',
       token,
       user: {
         _id: newUser._id,
