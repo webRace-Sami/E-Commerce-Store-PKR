@@ -29,15 +29,15 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/offers', offerRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/stats', statsRoutes);
+// API Routes (supports both /api/* and direct route for serverless environments)
+app.use(['/api/auth', '/auth'], authRoutes);
+app.use(['/api/products', '/products'], productRoutes);
+app.use(['/api/offers', '/offers'], offerRoutes);
+app.use(['/api/orders', '/orders'], orderRoutes);
+app.use(['/api/stats', '/stats'], statsRoutes);
 
 // Health check endpoint
-app.get('/api/health', (_req, res) => {
+app.use(['/api/health', '/health'], (_req, res) => {
   res.json({
     status: 'online',
     timestamp: new Date().toISOString(),
@@ -49,9 +49,11 @@ app.get('/api/health', (_req, res) => {
 // Error handling middleware
 app.use(errorHandler);
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 E-Commerce Server running on http://localhost:${PORT}`);
-});
+// Start server when run directly or in standalone mode
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🚀 E-Commerce Server running on http://localhost:${PORT}`);
+  });
+}
 
 export default app;
