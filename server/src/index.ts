@@ -39,7 +39,7 @@ app.use(['/api/stats', '/stats'], statsRoutes);
 app.use(['/api/settings', '/settings'], settingsRoutes);
 
 // Health check endpoint
-app.use(['/api/health', '/health'], (_req, res) => {
+app.use(['/api/health', '/health'], (_req: express.Request, res: express.Response) => {
   res.json({
     status: 'online',
     timestamp: new Date().toISOString(),
