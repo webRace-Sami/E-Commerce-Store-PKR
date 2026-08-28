@@ -12,7 +12,8 @@
     "dev:client": "npm --prefix client run dev",
     "build:server": "npm --prefix server run build",
     "build:client": "npm --prefix client run build",
-    "build": "npm --prefix client run build"
+    "build": "npm --prefix client run build",
+    "start": "npm --prefix server start"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
