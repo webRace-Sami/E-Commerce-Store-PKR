@@ -38,7 +38,25 @@ app.use(['/api/orders', '/orders'], orderRoutes);
 app.use(['/api/stats', '/stats'], statsRoutes);
 app.use(['/api/settings', '/settings'], settingsRoutes);
 
-// Health check endpoint
+// Root & Health Check Endpoints
+app.get(['/', '/api'], (_req: express.Request, res: express.Response) => {
+  res.json({
+    status: 'online',
+    message: '🚀 SM*Store E-Commerce API Server (Pakistan PKR) is Live & Operational!',
+    timestamp: new Date().toISOString(),
+    currency: 'PKR',
+    endpoints: {
+      health: '/api/health',
+      products: '/api/products',
+      offers: '/api/offers',
+      orders: '/api/orders',
+      auth: '/api/auth',
+      settings: '/api/settings',
+      stats: '/api/stats/admin'
+    }
+  });
+});
+
 app.use(['/api/health', '/health'], (_req: express.Request, res: express.Response) => {
   res.json({
     status: 'online',
