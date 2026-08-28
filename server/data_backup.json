@@ -22,6 +22,15 @@
         "postalCode": "75400"
       },
       "createdAt": "2026-08-28T15:27:10.414Z"
+    },
+    {
+      "_id": "user_1787942711436_rpgtr",
+      "name": "Test User",
+      "email": "testuser_1787942711338@example.com",
+      "password": "$2a$10$2Ocrf26su66hFmX5dMKcPefzBs/dhGFXYxOO/S04fcbQid8xQBZou",
+      "role": "user",
+      "phone": "+92 300 0000000",
+      "createdAt": "2026-08-28T18:45:11.436Z"
     }
   ],
   "products": [

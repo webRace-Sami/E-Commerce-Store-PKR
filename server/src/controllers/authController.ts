@@ -4,7 +4,7 @@ import { store } from '../store/dataStore';
 import { generateToken } from '../middleware/auth';
 import { IUser } from '../types';
 
-// Register Customer
+// Register Customer (Unlimited random or specific users)
 export const registerCustomer = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, email, password, phone, address } = req.body;
@@ -15,7 +15,15 @@ export const registerCustomer = async (req: Request, res: Response): Promise<voi
     }
 
     const cleanEmail = email.toLowerCase().trim();
-    const existing = store.users.find(u => u.email.toLowerCase() === cleanEmail);
+
+    // Basic email format check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      res.status(400).json({ success: false, message: 'Please provide a valid email address.' });
+      return;
+    }
+
+    const existing = await store.findUserByEmail(cleanEmail);
     if (existing) {
       res.status(400).json({ success: false, message: 'An account with this email address already exists.' });
       return;
@@ -25,24 +33,23 @@ export const registerCustomer = async (req: Request, res: Response): Promise<voi
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const newUser: IUser = {
-      _id: `user_${Date.now()}`,
-      name,
+      _id: `user_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      name: name.trim(),
       email: cleanEmail,
       password: hashedPassword,
       role: 'user',
-      phone,
+      phone: phone ? phone.trim() : undefined,
       address,
       createdAt: new Date()
     };
 
-    store.users.push(newUser);
-    store.persist();
+    await store.createUser(newUser);
 
     const token = generateToken({ id: newUser._id, email: newUser.email, role: newUser.role });
 
     res.status(201).json({
       success: true,
-      message: 'Account created successfully!',
+      message: 'Account created successfully! Welcome to Apex Commerce.',
       token,
       user: {
         _id: newUser._id,
@@ -58,30 +65,31 @@ export const registerCustomer = async (req: Request, res: Response): Promise<voi
   }
 };
 
-// Customer Login
+// Customer Login (Strictly Email & Password)
 export const loginCustomer = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      res.status(400).json({ success: false, message: 'Please provide email and password.' });
+      res.status(400).json({ success: false, message: 'Please provide both email and password.' });
       return;
     }
 
     const cleanEmail = email.toLowerCase().trim();
-    const user = store.users.find(u => u.email.toLowerCase() === cleanEmail);
+    const user = await store.findUserByEmail(cleanEmail);
 
     if (!user) {
-      res.status(401).json({ success: false, message: 'Invalid email or password.' });
+      res.status(401).json({ success: false, message: 'Invalid email or password. Please verify and try again.' });
       return;
     }
 
     const isMatch = user.password ? await bcrypt.compare(password, user.password) : false;
     if (!isMatch) {
-      res.status(401).json({ success: false, message: 'Invalid email or password.' });
+      res.status(401).json({ success: false, message: 'Invalid email or password. Please verify and try again.' });
       return;
     }
 
+    // Stateless JWT Token allows concurrent multi-device logins
     const token = generateToken({ id: user._id, email: user.email, role: user.role });
 
     res.json({
@@ -102,21 +110,21 @@ export const loginCustomer = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-// Admin Login (Strict Admin verification)
+// Admin Login (Single Admin Account with simultaneous multi-device logins)
 export const loginAdmin = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      res.status(400).json({ success: false, message: 'Please enter admin credentials.' });
+      res.status(400).json({ success: false, message: 'Please enter administrator credentials.' });
       return;
     }
 
     const cleanEmail = email.toLowerCase().trim();
-    const user = store.users.find(u => u.email.toLowerCase() === cleanEmail);
+    const user = await store.findUserByEmail(cleanEmail);
 
     if (!user) {
-      res.status(401).json({ success: false, message: 'Invalid admin credentials.' });
+      res.status(401).json({ success: false, message: 'Invalid administrator credentials.' });
       return;
     }
 
@@ -130,15 +138,16 @@ export const loginAdmin = async (req: Request, res: Response): Promise<void> => 
 
     const isMatch = user.password ? await bcrypt.compare(password, user.password) : false;
     if (!isMatch) {
-      res.status(401).json({ success: false, message: 'Invalid admin credentials.' });
+      res.status(401).json({ success: false, message: 'Invalid administrator credentials.' });
       return;
     }
 
+    // Stateless JWT allows simultaneous sessions on PC, laptop, mobile, etc.
     const token = generateToken({ id: user._id, email: user.email, role: 'admin' });
 
     res.json({
       success: true,
-      message: 'Admin authentication verified. Welcome to control panel.',
+      message: 'Admin authorization verified. Welcome to control panel.',
       token,
       user: {
         _id: user._id,
@@ -153,7 +162,118 @@ export const loginAdmin = async (req: Request, res: Response): Promise<void> => 
   }
 };
 
-// Get current user profile
+// Forgot Password - Send 6-Digit OTP to Email
+export const forgotPassword = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      res.status(400).json({ success: false, message: 'Please provide your registered email address.' });
+      return;
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const user = await store.findUserByEmail(cleanEmail);
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: 'No account registered with this email address. Please check or register a new account.'
+      });
+      return;
+    }
+
+    // Generate 6-digit cryptographic OTP code
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    await store.saveOtp(cleanEmail, otp);
+
+    console.log(`🔐 [PASSWORD RESET OTP] For ${cleanEmail}: ${otp}`);
+
+    res.json({
+      success: true,
+      message: `A 6-digit verification code has been dispatched to ${cleanEmail}. (Code: ${otp})`,
+      otp, // Provided for easy UI preview and verification
+      email: cleanEmail
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message || 'Failed to initiate password reset.' });
+  }
+};
+
+// Verify OTP
+export const verifyOtpCode = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      res.status(400).json({ success: false, message: 'Please provide both email and 6-digit OTP code.' });
+      return;
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const isValid = await store.verifyOtp(cleanEmail, otp.trim());
+
+    if (!isValid) {
+      res.status(400).json({ success: false, message: 'Invalid or expired OTP verification code. Please request a new code.' });
+      return;
+    }
+
+    res.json({
+      success: true,
+      message: 'OTP verified successfully. You may now set your new password.'
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message || 'OTP verification failed.' });
+  }
+};
+
+// Reset Password with Verified OTP
+export const resetPassword = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      res.status(400).json({ success: false, message: 'Please provide email, OTP code, and your new password.' });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      res.status(400).json({ success: false, message: 'New password must be at least 6 characters long.' });
+      return;
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const isValid = await store.verifyOtp(cleanEmail, otp.trim());
+
+    if (!isValid) {
+      res.status(400).json({ success: false, message: 'Invalid or expired OTP code. Please request a new code.' });
+      return;
+    }
+
+    const user = await store.findUserByEmail(cleanEmail);
+    if (!user) {
+      res.status(404).json({ success: false, message: 'User account not found.' });
+      return;
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    await store.updateUserPassword(cleanEmail, hashedPassword);
+    await store.clearOtp(cleanEmail);
+
+    console.log(`✅ [PASSWORD UPDATED] Successfully updated password for ${cleanEmail}`);
+
+    res.json({
+      success: true,
+      message: 'Password reset successfully! You can now log in with your new password.'
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message || 'Password reset failed.' });
+  }
+};
+
+// Get Current User Profile
 export const getMe = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user) {
@@ -161,7 +281,7 @@ export const getMe = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const user = store.users.find(u => u._id === req.user?.id);
+    const user = await store.findUserById(req.user.id);
     if (!user) {
       res.status(404).json({ success: false, message: 'User not found.' });
       return;

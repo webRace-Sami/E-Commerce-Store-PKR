@@ -36,6 +36,10 @@ export const api = {
   register: (data: any) => request<any>('/auth/register', { method: 'POST', data }),
   loginCustomer: (data: any) => request<any>('/auth/login', { method: 'POST', data }),
   loginAdmin: (data: any) => request<any>('/auth/admin/login', { method: 'POST', data }),
+  forgotPassword: (email: string) => request<any>('/auth/forgot-password', { method: 'POST', data: { email } }),
+  verifyOtp: (email: string, otp: string) => request<any>('/auth/verify-otp', { method: 'POST', data: { email, otp } }),
+  resetPassword: (data: { email: string; otp: string; newPassword: string }) =>
+    request<any>('/auth/reset-password', { method: 'POST', data }),
   getMe: () => request<any>('/auth/me', { method: 'GET' }),
 
   // Products

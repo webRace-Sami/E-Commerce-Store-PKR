@@ -1,7 +1,13 @@
 import fs from 'fs';
 import path from 'path';
 import bcrypt from 'bcryptjs';
+import mongoose from 'mongoose';
 import { IUser, IProduct, IOffer, IOrder } from '../types';
+import { UserModel } from '../models/User';
+import { ProductModel } from '../models/Product';
+import { OfferModel } from '../models/Offer';
+import { OrderModel } from '../models/Order';
+import { OtpModel } from '../models/Otp';
 
 const DATA_FILE = path.join(__dirname, '../../data_backup.json');
 
@@ -227,7 +233,7 @@ const INITIAL_OFFERS: IOffer[] = [
     bgGradient: 'from-indigo-900 via-purple-900 to-slate-900',
     buttonText: 'Shop Mega Offers Now',
     buttonLink: '/shop?filter=offers',
-    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days in future
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     isActive: true,
     featuredProductId: 'prod_1',
     createdAt: new Date()
@@ -250,18 +256,23 @@ const INITIAL_OFFERS: IOffer[] = [
   }
 ];
 
+interface IOtpEntry {
+  otp: string;
+  expiresAt: number;
+}
+
 class MemoryDataStore {
   public users: IUser[] = [];
   public products: IProduct[] = [];
   public offers: IOffer[] = [];
   public orders: IOrder[] = [];
+  public otps: Map<string, IOtpEntry> = new Map();
 
   constructor() {
     this.init();
   }
 
   private init() {
-    // Check if backup file exists to restore
     if (fs.existsSync(DATA_FILE)) {
       try {
         const raw = fs.readFileSync(DATA_FILE, 'utf-8');
@@ -276,7 +287,6 @@ class MemoryDataStore {
       }
     }
 
-    // Initialize seed data
     const salt = bcrypt.genSaltSync(10);
     const adminPassword = bcrypt.hashSync('Admin123!', salt);
     const userPassword = bcrypt.hashSync('User123!', salt);
@@ -360,7 +370,123 @@ class MemoryDataStore {
         'utf-8'
       );
     } catch (err) {
-      console.error('Error saving data backup:', err);
+      // Ignored if in read-only environment
+    }
+  }
+
+  // --- Asynchronous User Management with MongoDB Sync ---
+  public async findUserByEmail(email: string): Promise<IUser | null> {
+    const cleanEmail = email.toLowerCase().trim();
+    if (mongoose.connection.readyState === 1) {
+      try {
+        const dbUser = await UserModel.findOne({ email: cleanEmail }).lean();
+        if (dbUser) return dbUser as any as IUser;
+      } catch (err) {
+        // fallback to memory
+      }
+    }
+    return this.users.find(u => u.email.toLowerCase() === cleanEmail) || null;
+  }
+
+  public async findUserById(id: string): Promise<IUser | null> {
+    if (mongoose.connection.readyState === 1) {
+      try {
+        const dbUser = await UserModel.findById(id).lean();
+        if (dbUser) return dbUser as any as IUser;
+      } catch (err) {
+        // fallback
+      }
+    }
+    return this.users.find(u => u._id === id) || null;
+  }
+
+  public async createUser(userData: IUser): Promise<IUser> {
+    this.users.push(userData);
+    this.persist();
+
+    if (mongoose.connection.readyState === 1) {
+      try {
+        await UserModel.create(userData);
+      } catch (err) {
+        console.warn('Could not save user to MongoDB Atlas:', err);
+      }
+    }
+    return userData;
+  }
+
+  public async updateUserPassword(email: string, hashedPassword: string): Promise<boolean> {
+    const cleanEmail = email.toLowerCase().trim();
+    const idx = this.users.findIndex(u => u.email.toLowerCase() === cleanEmail);
+    if (idx !== -1) {
+      this.users[idx].password = hashedPassword;
+      this.persist();
+    }
+
+    if (mongoose.connection.readyState === 1) {
+      try {
+        await UserModel.updateOne({ email: cleanEmail }, { $set: { password: hashedPassword } });
+      } catch (err) {
+        console.warn('Could not update password in MongoDB Atlas:', err);
+      }
+    }
+    return true;
+  }
+
+  // --- OTP Verification Store ---
+  public async saveOtp(email: string, otp: string): Promise<void> {
+    const cleanEmail = email.toLowerCase().trim();
+    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+    this.otps.set(cleanEmail, { otp, expiresAt });
+
+    if (mongoose.connection.readyState === 1) {
+      try {
+        await OtpModel.findOneAndUpdate(
+          { email: cleanEmail },
+          { email: cleanEmail, otp, expiresAt: new Date(expiresAt) },
+          { upsert: true, new: true }
+        );
+      } catch (err) {
+        // fallback
+      }
+    }
+  }
+
+  public async verifyOtp(email: string, otp: string): Promise<boolean> {
+    const cleanEmail = email.toLowerCase().trim();
+    const cleanOtp = otp.trim();
+
+    // Check memory OTP
+    const memOtp = this.otps.get(cleanEmail);
+    if (memOtp && memOtp.otp === cleanOtp && memOtp.expiresAt > Date.now()) {
+      return true;
+    }
+
+    // Check MongoDB OTP
+    if (mongoose.connection.readyState === 1) {
+      try {
+        const dbOtp = await OtpModel.findOne({ email: cleanEmail, otp: cleanOtp });
+        if (dbOtp && new Date(dbOtp.expiresAt).getTime() > Date.now()) {
+          return true;
+        }
+      } catch (err) {
+        // fallback
+      }
+    }
+
+    return false;
+  }
+
+  public async clearOtp(email: string): Promise<void> {
+    const cleanEmail = email.toLowerCase().trim();
+    this.otps.delete(cleanEmail);
+
+    if (mongoose.connection.readyState === 1) {
+      try {
+        await OtpModel.deleteMany({ email: cleanEmail });
+      } catch (err) {
+        // fallback
+      }
     }
   }
 }
