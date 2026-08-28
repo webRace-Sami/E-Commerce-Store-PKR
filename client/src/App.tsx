@@ -5,6 +5,7 @@ import { ToastProvider } from './context/ToastContext';
 import { ConfirmProvider } from './context/ConfirmContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { SettingsProvider } from './context/SettingsContext';
 
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
@@ -25,6 +26,7 @@ import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminProducts } from './pages/admin/AdminProducts';
 import { AdminOffers } from './pages/admin/AdminOffers';
 import { AdminOrders } from './pages/admin/AdminOrders';
+import { AdminSettings } from './pages/admin/AdminSettings';
 
 // Strict Admin-only Route Guard
 const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -99,6 +101,14 @@ const AppContent: React.FC = () => {
               </AdminRoute>
             }
           />
+          <Route
+            path="/admin/settings"
+            element={
+              <AdminRoute>
+                <AdminSettings />
+              </AdminRoute>
+            }
+          />
 
           {/* Catch-all fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
@@ -116,11 +126,13 @@ export const App: React.FC = () => {
       <ToastProvider>
         <ConfirmProvider>
           <AuthProvider>
-            <CartProvider>
-              <BrowserRouter>
-                <AppContent />
-              </BrowserRouter>
-            </CartProvider>
+            <SettingsProvider>
+              <CartProvider>
+                <BrowserRouter>
+                  <AppContent />
+                </BrowserRouter>
+              </CartProvider>
+            </SettingsProvider>
           </AuthProvider>
         </ConfirmProvider>
       </ToastProvider>

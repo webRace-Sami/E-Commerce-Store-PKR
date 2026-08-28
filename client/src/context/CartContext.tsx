@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, CartItem } from '../types';
 import { useToast } from './ToastContext';
+import { useSettings } from './SettingsContext';
 
 interface CartContextType {
   items: CartItem[];
@@ -11,6 +12,7 @@ interface CartContextType {
   totalItems: number;
   subtotal: number;
   shipping: number;
+  tax: number;
   totalPrice: number;
   isCartOpen: boolean;
   openCart: () => void;
@@ -24,6 +26,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { settings } = useSettings();
   const [items, setItems] = useState<CartItem[]>(() => {
     const saved = localStorage.getItem('sm_cart') || localStorage.getItem('apex_cart');
     return saved ? JSON.parse(saved) : [];
@@ -133,8 +136,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-  const shipping = subtotal > 0 && subtotal < 50000 ? 350 : 0;
-  const totalPrice = subtotal + shipping;
+  const shipping = subtotal > 0 && subtotal < (settings.freeShippingThreshold || 50000) ? (settings.shippingFee || 350) : 0;
+  const tax = subtotal > 0 && settings.taxRate > 0 ? Math.round((subtotal * settings.taxRate) / 100) : 0;
+  const totalPrice = subtotal + shipping + tax;
 
   return (
     <CartContext.Provider
@@ -147,6 +151,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         totalItems,
         subtotal,
         shipping,
+        tax,
         totalPrice,
         isCartOpen,
         openCart,

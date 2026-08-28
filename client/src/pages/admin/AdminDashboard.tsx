@@ -95,13 +95,16 @@ export const AdminDashboard: React.FC = () => {
           {/* Quick Action Navigation */}
           <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
             <Link to="/admin/products" className="btn btn-primary btn-sm">
-              <Plus size={16} /> Manage Products & Stock
+              <Plus size={16} /> Products & Stock
             </Link>
             <Link to="/admin/offers" className="btn btn-sale btn-sm">
               <Sparkles size={16} /> Big Offers & Promos
             </Link>
             <Link to="/admin/orders" className="btn btn-secondary btn-sm">
               <ShoppingBag size={16} /> Fulfillment Orders
+            </Link>
+            <Link to="/admin/settings" className="btn btn-secondary btn-sm" style={{ border: '1.5px solid var(--border-color)' }}>
+              <Layers size={16} color="var(--primary)" /> Store Settings & Rates
             </Link>
           </div>
         </div>

@@ -16,14 +16,16 @@ import {
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useSettings } from '../context/SettingsContext';
 import { api } from '../services/api';
 import { formatPKR } from '../utils/currency';
 import { Order } from '../types';
 import { generateReceiptPDF } from '../utils/receiptGenerator';
 
 export const CheckoutPage: React.FC = () => {
-  const { items, subtotal, shipping, totalPrice, clearCart } = useCart();
+  const { items, subtotal, shipping, tax, totalPrice, clearCart } = useCart();
   const { user, isAuthenticated } = useAuth();
+  const { settings } = useSettings();
   const { showToast, error } = useToast();
   const navigate = useNavigate();
 
@@ -184,7 +186,7 @@ export const CheckoutPage: React.FC = () => {
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-muted)' }}>WhatsApp Helpline:</span>
-              <strong>+92 300 1234567</strong>
+              <strong>{settings.phone}</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-color)', paddingTop: '0.6rem', marginTop: '0.2rem' }}>
               <span style={{ fontWeight: 800 }}>Total Payable (PKR):</span>
@@ -198,7 +200,7 @@ export const CheckoutPage: React.FC = () => {
           {/* PDF Receipt Action */}
           <button
             type="button"
-            onClick={() => generateReceiptPDF(placedOrder)}
+            onClick={() => generateReceiptPDF(placedOrder, settings)}
             className="btn btn-secondary btn-lg"
             style={{
               width: '100%',
@@ -277,7 +279,7 @@ export const CheckoutPage: React.FC = () => {
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Hamza Khan"
+                      placeholder="e.g. Ali Ahmed"
                       value={formData.customerName}
                       onChange={e => handleInputChange('customerName', e.target.value)}
                       className="form-input"
@@ -300,7 +302,7 @@ export const CheckoutPage: React.FC = () => {
                     <label className="input-label">Email Address (For Order Updates)</label>
                     <input
                       type="email"
-                      placeholder="e.g. hamza@example.com"
+                      placeholder="e.g. customer@example.com"
                       value={formData.customerEmail}
                       onChange={e => handleInputChange('customerEmail', e.target.value)}
                       className="form-input"
@@ -501,6 +503,12 @@ export const CheckoutPage: React.FC = () => {
                     {shipping === 0 ? 'FREE' : formatPKR(shipping)}
                   </span>
                 </div>
+                {tax > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+                    <span>Sales Tax ({settings.taxRate}%)</span>
+                    <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{formatPKR(tax)}</span>
+                  </div>
+                )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem', marginTop: '0.3rem', alignItems: 'baseline' }}>
                   <span style={{ fontWeight: 800, fontSize: '1.1rem' }}>Total in PKR</span>
                   <span className="price-pkr" style={{ fontSize: '1.5rem' }}>

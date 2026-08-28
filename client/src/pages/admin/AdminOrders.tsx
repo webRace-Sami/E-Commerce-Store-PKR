@@ -4,9 +4,11 @@ import { api } from '../../services/api';
 import { Order } from '../../types';
 import { formatPKR } from '../../utils/currency';
 import { useToast } from '../../context/ToastContext';
+import { useSettings } from '../../context/SettingsContext';
 import { generateReceiptPDF } from '../../utils/receiptGenerator';
 
 export const AdminOrders: React.FC = () => {
+  const { settings } = useSettings();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('All');
@@ -156,7 +158,7 @@ export const AdminOrders: React.FC = () => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                     <button
                       type="button"
-                      onClick={() => generateReceiptPDF(order)}
+                      onClick={() => generateReceiptPDF(order, settings)}
                       className="btn btn-secondary btn-sm"
                       style={{ gap: '0.35rem', borderRadius: 'var(--radius-md)' }}
                     >

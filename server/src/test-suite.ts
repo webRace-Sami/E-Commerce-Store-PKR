@@ -130,8 +130,8 @@ async function runTests() {
       'Authorization': `Bearer ${userToken}`
     },
     body: JSON.stringify({
-      customerName: 'Hamza Khan',
-      customerEmail: 'user@store.pk',
+      customerName: 'Ali Ahmed',
+      customerEmail: 'customer@smstore.pk',
       customerPhone: '0300 1234567',
       shippingAddress: {
         address: 'House 12, Street 4, F-7/2',

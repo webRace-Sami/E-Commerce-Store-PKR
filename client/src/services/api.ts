@@ -70,5 +70,9 @@ export const api = {
     request<any>(`/orders/${id}/status`, { method: 'PATCH', data: { orderStatus } }),
 
   // Stats
-  getAdminStats: () => request<any>('/stats/admin', { method: 'GET' })
+  getAdminStats: () => request<any>('/stats/admin', { method: 'GET' }),
+
+  // Store Settings
+  getSettings: () => request<any>('/settings', { method: 'GET' }),
+  updateSettings: (data: any) => request<any>('/settings', { method: 'PUT', data })
 };

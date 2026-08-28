@@ -91,7 +91,7 @@ export const UserRegister: React.FC = () => {
             <input
               type="text"
               required
-              placeholder="e.g. Hamza Khan"
+              placeholder="e.g. Ali Ahmed"
               value={name}
               onChange={e => setName(e.target.value)}
               className="form-input"
@@ -103,7 +103,7 @@ export const UserRegister: React.FC = () => {
             <input
               type="email"
               required
-              placeholder="e.g. hamza@example.com"
+              placeholder="name@gmail.com"
               value={email}
               onChange={e => setEmail(e.target.value)}
               className="form-input"

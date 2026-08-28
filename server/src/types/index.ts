@@ -74,9 +74,21 @@ export interface IOrder {
   paymentMethod: 'Cash on Delivery' | 'Bank Transfer' | 'EasyPaisa / JazzCash';
   itemsPrice: number;
   shippingPrice: number;
+  taxPrice?: number;
   totalPrice: number; // in PKR
   orderStatus: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
   createdAt: Date;
+}
+
+export interface IStoreSettings {
+  storeName: string;
+  adminEmail: string;
+  phone: string;
+  shippingFee: number;
+  freeShippingThreshold: number;
+  taxRate: number;
+  currency: string;
+  address: string;
 }
 
 export interface AuthRequest extends Express.Request {

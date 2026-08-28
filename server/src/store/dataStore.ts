@@ -2,12 +2,13 @@ import fs from 'fs';
 import path from 'path';
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
-import { IUser, IProduct, IOffer, IOrder } from '../types';
+import { IUser, IProduct, IOffer, IOrder, IStoreSettings } from '../types';
 import { UserModel } from '../models/User';
 import { ProductModel } from '../models/Product';
 import { OfferModel } from '../models/Offer';
 import { OrderModel } from '../models/Order';
 import { OtpModel } from '../models/Otp';
+import { SettingsModel } from '../models/Settings';
 
 const DATA_FILE = path.join(__dirname, '../../data_backup.json');
 
@@ -267,6 +268,16 @@ class MemoryDataStore {
   public offers: IOffer[] = [];
   public orders: IOrder[] = [];
   public otps: Map<string, IOtpEntry> = new Map();
+  public settings: IStoreSettings = {
+    storeName: 'SM*Store',
+    adminEmail: 'samiullahnawaz942@gmail.com',
+    phone: '+92 300 1234567',
+    shippingFee: 350,
+    freeShippingThreshold: 50000,
+    taxRate: 0,
+    currency: 'PKR',
+    address: 'Karachi, Pakistan'
+  };
 
   constructor() {
     this.init();
@@ -275,7 +286,6 @@ class MemoryDataStore {
   private init() {
     const salt = bcrypt.genSaltSync(10);
     const samiAdminPassword = bcrypt.hashSync('561703SM*Store', salt);
-    const userPassword = bcrypt.hashSync('User123!', salt);
 
     const primaryAdmin: IUser = {
       _id: 'admin_samiullah',
@@ -297,29 +307,17 @@ class MemoryDataStore {
       createdAt: new Date()
     };
 
-    const defaultCustomer: IUser = {
-      _id: 'user_customer',
-      name: 'Hamza Khan',
-      email: 'user@smstore.pk',
-      password: userPassword,
-      role: 'user',
-      phone: '+92 321 9876543',
-      address: {
-        street: 'House #45, Block 6, PECHS',
-        city: 'Karachi',
-        postalCode: '75400'
-      },
-      createdAt: new Date()
-    };
-
     if (fs.existsSync(DATA_FILE)) {
       try {
         const raw = fs.readFileSync(DATA_FILE, 'utf-8');
         const data = JSON.parse(raw);
-        this.users = data.users || [];
+        this.users = (data.users || []).filter((u: any) => u.name !== 'Hamza Khan' && u.email !== 'user@store.pk');
         this.products = data.products || [];
         this.offers = data.offers || [];
-        this.orders = data.orders || [];
+        this.orders = (data.orders || []).filter((o: any) => o.customerName !== 'Hamza Khan');
+        if (data.settings) {
+          this.settings = { ...this.settings, ...data.settings };
+        }
 
         // Ensure primary admin samiullahnawaz942@gmail.com is always present
         const existingAdmin = this.users.find(u => u.email.toLowerCase() === 'samiullahnawaz942@gmail.com');
@@ -334,39 +332,10 @@ class MemoryDataStore {
       }
     }
 
-    this.users = [primaryAdmin, secondaryAdmin, defaultCustomer];
+    this.users = [primaryAdmin, secondaryAdmin];
     this.products = [...INITIAL_PRODUCTS];
     this.offers = [...INITIAL_OFFERS];
-    this.orders = [
-      {
-        _id: 'order_1001',
-        user: 'user_customer',
-        customerName: 'Hamza Khan',
-        customerEmail: 'user@store.pk',
-        customerPhone: '+92 321 9876543',
-        shippingAddress: {
-          address: 'House #45, Block 6, PECHS',
-          city: 'Karachi',
-          postalCode: '75400',
-          notes: 'Please call before delivery'
-        },
-        orderItems: [
-          {
-            productId: 'prod_6',
-            name: 'Anker 737 Power Bank (PowerCore 24K, 140W Ultra-Fast)',
-            image: 'https://images.unsplash.com/photo-1609592426867-b50117b4c6e8?w=800&auto=format&fit=crop&q=80',
-            price: 32500,
-            quantity: 1
-          }
-        ],
-        paymentMethod: 'Cash on Delivery',
-        itemsPrice: 32500,
-        shippingPrice: 350,
-        totalPrice: 32850,
-        orderStatus: 'Delivered',
-        createdAt: new Date('2026-02-20')
-      }
-    ];
+    this.orders = [];
 
     this.persist();
   }
@@ -377,6 +346,7 @@ class MemoryDataStore {
         DATA_FILE,
         JSON.stringify(
           {
+            settings: this.settings,
             users: this.users,
             products: this.products,
             offers: this.offers,
@@ -390,6 +360,48 @@ class MemoryDataStore {
     } catch (err) {
       // Ignored if in read-only environment
     }
+  }
+
+  // --- Store Settings Management ---
+  public async getSettings(): Promise<IStoreSettings> {
+    if (mongoose.connection.readyState === 1) {
+      try {
+        const dbSettings = await SettingsModel.findOne().lean();
+        if (dbSettings) {
+          this.settings = {
+            storeName: dbSettings.storeName || this.settings.storeName,
+            adminEmail: dbSettings.adminEmail || this.settings.adminEmail,
+            phone: dbSettings.phone || this.settings.phone,
+            shippingFee: dbSettings.shippingFee !== undefined ? dbSettings.shippingFee : this.settings.shippingFee,
+            freeShippingThreshold: dbSettings.freeShippingThreshold !== undefined ? dbSettings.freeShippingThreshold : this.settings.freeShippingThreshold,
+            taxRate: dbSettings.taxRate !== undefined ? dbSettings.taxRate : this.settings.taxRate,
+            currency: dbSettings.currency || this.settings.currency,
+            address: dbSettings.address || this.settings.address
+          };
+          return this.settings;
+        }
+      } catch (err) {
+        // fallback
+      }
+    }
+    return this.settings;
+  }
+
+  public async updateSettings(newSettings: Partial<IStoreSettings>): Promise<IStoreSettings> {
+    this.settings = {
+      ...this.settings,
+      ...newSettings
+    };
+    this.persist();
+
+    if (mongoose.connection.readyState === 1) {
+      try {
+        await SettingsModel.findOneAndUpdate({}, this.settings, { upsert: true, new: true });
+      } catch (err) {
+        console.warn('Could not update settings in MongoDB Atlas:', err);
+      }
+    }
+    return this.settings;
   }
 
   // --- Asynchronous User Management with MongoDB Sync ---

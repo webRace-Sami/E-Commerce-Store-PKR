@@ -1,11 +1,34 @@
-import { Order } from '../types';
-import { formatPKR } from './currency';
+import { Order, StoreSettings } from '../types';
 
-export const generateReceiptPDF = (order: Order) => {
+export const generateReceiptPDF = (order: Order, customSettings?: Partial<StoreSettings>) => {
   const printWindow = window.open('', '_blank', 'width=850,height=900');
   if (!printWindow) {
     alert('Please allow popups to download and print the receipt.');
     return;
+  }
+
+  let storeConfig: StoreSettings = {
+    storeName: 'SM*Store',
+    adminEmail: 'samiullahnawaz942@gmail.com',
+    phone: '+92 300 1234567',
+    shippingFee: 350,
+    freeShippingThreshold: 50000,
+    taxRate: 0,
+    currency: 'PKR',
+    address: 'Karachi, Pakistan'
+  };
+
+  try {
+    const cached = localStorage.getItem('sm_store_settings');
+    if (cached) {
+      storeConfig = { ...storeConfig, ...JSON.parse(cached) };
+    }
+  } catch {
+    // fallback
+  }
+
+  if (customSettings) {
+    storeConfig = { ...storeConfig, ...customSettings };
   }
 
   const dateStr = new Date(order.createdAt).toLocaleDateString('en-PK', {
@@ -17,7 +40,7 @@ export const generateReceiptPDF = (order: Order) => {
   });
 
   const tax = (order as any).taxPrice || 0;
-  const courierPrice = order.shippingPrice !== undefined ? order.shippingPrice : 0;
+  const courierPrice = order.shippingPrice !== undefined ? order.shippingPrice : storeConfig.shippingFee;
   const itemsTotal = order.itemsPrice || order.orderItems.reduce((acc, it) => acc + it.price * it.quantity, 0);
   const grandTotal = order.totalPrice || itemsTotal + tax + courierPrice;
 
@@ -283,12 +306,12 @@ export const generateReceiptPDF = (order: Order) => {
     <!-- Header -->
     <div class="header">
       <div>
-        <div class="brand-title">SM*STORE</div>
+        <div class="brand-title">${storeConfig.storeName}</div>
         <div class="brand-sub">Premium Electronics, Flagship Tech & Audio Gear Pakistan</div>
         <div class="helpline-box">
-          <div><strong>WhatsApp Helpline:</strong> +92 300 1234567</div>
-          <div><strong>Official Email:</strong> support@smstore.pk</div>
-          <div><strong>Online Store:</strong> www.smstore.pk</div>
+          <div><strong>WhatsApp Helpline:</strong> ${storeConfig.phone}</div>
+          <div><strong>Official Email:</strong> ${storeConfig.adminEmail}</div>
+          <div><strong>Dispatch City:</strong> ${storeConfig.address}</div>
         </div>
       </div>
       <div class="invoice-tag">
@@ -359,7 +382,7 @@ export const generateReceiptPDF = (order: Order) => {
           <td class="sum-value">₨ ${new Intl.NumberFormat('en-PK').format(courierPrice)}</td>
         </tr>
         <tr>
-          <td class="sum-label">Sales Tax & Levies:</td>
+          <td class="sum-label">Sales Tax & Levies (${storeConfig.taxRate}%):</td>
           <td class="sum-value">₨ ${new Intl.NumberFormat('en-PK').format(tax)}</td>
         </tr>
         <tr class="total-row">
@@ -374,14 +397,14 @@ export const generateReceiptPDF = (order: Order) => {
       <h5>Terms & Customer Policies:</h5>
       <ul>
         <li><strong>7 Days Checking Warranty:</strong> Valid from delivery date on all electronic products and devices.</li>
-        <li><strong>WhatsApp Helpline:</strong> For order updates, courier tracking, or claims, message us on WhatsApp at <strong>+92 300 1234567</strong> with your Invoice ID.</li>
+        <li><strong>WhatsApp Helpline:</strong> For order updates, courier tracking, or claims, message us on WhatsApp at <strong>${storeConfig.phone}</strong> with your Invoice ID.</li>
         <li><strong>Rider Verification:</strong> Please inspect package sealed condition before making payment on Cash on Delivery.</li>
       </ul>
     </div>
 
     <!-- Footer -->
     <div class="receipt-footer">
-      <div class="copyright-text">All rights reserved to WebRace Co. 2026 • SM*Store Pakistan</div>
+      <div class="copyright-text">All rights reserved to WebRace Co. 2026 • ${storeConfig.storeName} Pakistan</div>
       <div class="signature-text">Computer generated receipt • No physical signature required</div>
     </div>
   </div>

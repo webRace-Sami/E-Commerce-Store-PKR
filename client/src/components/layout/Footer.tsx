@@ -1,8 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingBag, Truck, ShieldCheck, RefreshCw, Headphones, Shield } from 'lucide-react';
+import { useSettings } from '../../context/SettingsContext';
+import { formatPKR } from '../../utils/currency';
 
 export const Footer: React.FC = () => {
+  const { settings } = useSettings();
+
   return (
     <footer
       style={{
@@ -43,7 +47,7 @@ export const Footer: React.FC = () => {
             </div>
             <div>
               <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>Free Delivery</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>On all orders above Rs. 50,000</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>On all orders above {formatPKR(settings.freeShippingThreshold)}</div>
             </div>
           </div>
 
@@ -152,7 +156,7 @@ export const Footer: React.FC = () => {
               <span className="badge badge-success">Cash on Delivery</span>
             </div>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              <strong>WhatsApp Helpline:</strong> +92 300 1234567
+              <strong>WhatsApp Helpline:</strong> {settings.phone}
             </div>
           </div>
 

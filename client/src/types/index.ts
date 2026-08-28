@@ -76,9 +76,21 @@ export interface Order {
   paymentMethod: 'Cash on Delivery' | 'Bank Transfer' | 'EasyPaisa / JazzCash';
   itemsPrice: number;
   shippingPrice: number;
+  taxPrice?: number;
   totalPrice: number;
   orderStatus: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
   createdAt: string;
+}
+
+export interface StoreSettings {
+  storeName: string;
+  adminEmail: string;
+  phone: string;
+  shippingFee: number;
+  freeShippingThreshold: number;
+  taxRate: number;
+  currency: string;
+  address: string;
 }
 
 export interface AdminStats {

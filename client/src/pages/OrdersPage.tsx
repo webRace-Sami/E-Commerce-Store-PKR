@@ -5,10 +5,12 @@ import { api } from '../services/api';
 import { Order } from '../types';
 import { formatPKR } from '../utils/currency';
 import { useAuth } from '../context/AuthContext';
+import { useSettings } from '../context/SettingsContext';
 import { generateReceiptPDF } from '../utils/receiptGenerator';
 
 export const OrdersPage: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
+  const { settings } = useSettings();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -166,7 +168,7 @@ export const OrdersPage: React.FC = () => {
 
                     <button
                       type="button"
-                      onClick={() => generateReceiptPDF(order)}
+                      onClick={() => generateReceiptPDF(order, settings)}
                       className="btn btn-secondary btn-sm"
                       style={{ gap: '0.4rem', borderRadius: 'var(--radius-md)' }}
                     >

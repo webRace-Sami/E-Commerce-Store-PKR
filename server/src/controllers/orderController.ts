@@ -61,14 +61,16 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
       }
     }
 
-    const shippingPrice = itemsPrice >= 50000 ? 0 : 350; // Free delivery in Pakistan above Rs. 50,000
-    const totalPrice = itemsPrice + shippingPrice;
+    const settings = await store.getSettings();
+    const shippingPrice = itemsPrice >= settings.freeShippingThreshold ? 0 : settings.shippingFee;
+    const taxPrice = settings.taxRate > 0 ? Math.round((itemsPrice * settings.taxRate) / 100) : 0;
+    const totalPrice = itemsPrice + shippingPrice + taxPrice;
 
     const newOrder: IOrder = {
       _id: `order_${Date.now()}`,
       user: req.user?.id,
       customerName,
-      customerEmail: customerEmail || req.user?.email || 'guest@store.pk',
+      customerEmail: customerEmail || req.user?.email || 'customer@smstore.pk',
       customerPhone,
       shippingAddress: {
         address: shippingAddress.address,
@@ -80,6 +82,7 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
       paymentMethod: paymentMethod || 'Cash on Delivery',
       itemsPrice,
       shippingPrice,
+      taxPrice,
       totalPrice,
       orderStatus: 'Pending',
       createdAt: new Date()

@@ -7,6 +7,7 @@ import productRoutes from './routes/productRoutes';
 import offerRoutes from './routes/offerRoutes';
 import orderRoutes from './routes/orderRoutes';
 import statsRoutes from './routes/statsRoutes';
+import settingsRoutes from './routes/settingsRoutes';
 import { errorHandler } from './middleware/errorHandler';
 
 dotenv.config();
@@ -35,6 +36,7 @@ app.use(['/api/products', '/products'], productRoutes);
 app.use(['/api/offers', '/offers'], offerRoutes);
 app.use(['/api/orders', '/orders'], orderRoutes);
 app.use(['/api/stats', '/stats'], statsRoutes);
+app.use(['/api/settings', '/settings'], settingsRoutes);
 
 // Health check endpoint
 app.use(['/api/health', '/health'], (_req, res) => {

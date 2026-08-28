@@ -275,6 +275,14 @@ export const Header: React.FC = () => {
                       >
                         <ShoppingBag size={16} /> Manage Orders
                       </Link>
+                      <Link
+                        to="/admin/settings"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="btn btn-ghost"
+                        style={{ width: '100%', justifyContent: 'flex-start', padding: '0.5rem 0.8rem', fontSize: '0.85rem' }}
+                      >
+                        <Sliders size={16} color="var(--primary)" /> Store Settings & Rates
+                      </Link>
                     </>
                   ) : (
                     <Link
