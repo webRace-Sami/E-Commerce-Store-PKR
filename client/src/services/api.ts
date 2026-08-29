@@ -13,8 +13,8 @@ const getBaseUrl = (): string => {
     if (import.meta.env.DEV) {
       return '/api';
     }
-    // Production fallback if VITE_API_URL is not set in Vercel
-    return 'https://ecommerce-backend-api.onrender.com/api';
+    // Production fallback with exact live Render backend URL
+    return 'https://e-commerce-store-pkr-1.onrender.com/api';
   }
   url = url.replace(/\/+$/, '');
   if (!url.endsWith('/api') && !url.includes('/api/')) {
