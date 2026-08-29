@@ -1,4 +1,13 @@
 const getBaseUrl = (): string => {
+  // 1. Check runtime localStorage override (useful for testing or custom domains)
+  const localUrl = localStorage.getItem('sm_backend_url')?.trim();
+  if (localUrl) {
+    let clean = localUrl.replace(/\/+$/, '');
+    if (!clean.endsWith('/api') && !clean.includes('/api/')) clean = `${clean}/api`;
+    return clean;
+  }
+
+  // 2. Check build-time environment variable
   let url = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
   if (!url) {
     if (import.meta.env.DEV) {
@@ -38,14 +47,23 @@ export async function request<T>(endpoint: string, options: RequestOptions = {})
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   const targetUrl = `${getBaseUrl()}${cleanEndpoint}`;
 
-  const response = await fetch(targetUrl, config);
-  const data = await response.json().catch(() => ({}));
+  try {
+    const response = await fetch(targetUrl, config);
+    const data = await response.json().catch(() => ({}));
 
-  if (!response.ok) {
-    throw new Error(data.message || `Request failed with status ${response.status}`);
+    if (!response.ok) {
+      throw new Error(data.message || `Request failed with status ${response.status}`);
+    }
+
+    return data as T;
+  } catch (err: any) {
+    if (err.message && err.message.toLowerCase().includes('failed to fetch')) {
+      throw new Error(
+        `Backend Connection Notice: Cannot reach ${targetUrl}. If on Render Free Tier, the backend may be waking up from sleep (~30s). Please try again in a few seconds or verify VITE_API_URL in Vercel.`
+      );
+    }
+    throw err;
   }
-
-  return data as T;
 }
 
 export const api = {
