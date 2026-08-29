@@ -9,7 +9,7 @@ const getBaseUrl = (): string => {
 
   // 2. Check build-time environment variable
   let url = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
-  if (!url) {
+  if (!url || url.includes('ecommerce-backend-api.onrender.com')) {
     if (import.meta.env.DEV) {
       return '/api';
     }
