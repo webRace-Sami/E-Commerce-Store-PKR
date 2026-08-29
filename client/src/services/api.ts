@@ -1,4 +1,18 @@
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+const getBaseUrl = (): string => {
+  let url = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
+  if (!url) {
+    if (import.meta.env.DEV) {
+      return '/api';
+    }
+    // Production fallback if VITE_API_URL is not set in Vercel
+    return 'https://ecommerce-backend-api.onrender.com/api';
+  }
+  url = url.replace(/\/+$/, '');
+  if (!url.endsWith('/api') && !url.includes('/api/')) {
+    url = `${url}/api`;
+  }
+  return url;
+};
 
 interface RequestOptions extends RequestInit {
   data?: any;
@@ -21,7 +35,10 @@ export async function request<T>(endpoint: string, options: RequestOptions = {})
     body: options.data ? JSON.stringify(options.data) : options.body
   };
 
-  const response = await fetch(`${API_BASE}${endpoint}`, config);
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const targetUrl = `${getBaseUrl()}${cleanEndpoint}`;
+
+  const response = await fetch(targetUrl, config);
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
